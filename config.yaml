@@ -1,0 +1,57 @@
+# SLURM config
+defaults:
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  run:  # don't put outputs in HOME, use SCRATCH instead
+    dir: ${oc.env:SCRATCH}/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${oc.env:SCRATCH}/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  launcher:
+    gres: gpu:1     # use this on the nyu greene cluster instead of partition
+    timeout_min: 2800
+    tasks_per_node: 1
+    cpus_per_task: 8
+    nodes: 1
+    mem_gb: 32     # don't go nuts
+    max_num_timeout: 0     # increase if you support requeuing / preemption
+    gpus_per_node: null     # don't use this, use gres
+    partition: null     # don't use this
+    comment: null     # optionally use this to tell others on the cluster what your job is up to
+
+# weights and biases config
+wandb: False     # prefer to override this on commandline to avoid cluttering your wandb profile
+wbentity: null     # I think this defaults to the `wandb login` user, so no need to override
+wbproject: nyu_medical_cv     # set this to appropriate project name
+group: default     # I use group names for different sweeps
+
+name: null     # name=1,2,3 is a convenient way to schedule repeats with the same other hyperparameters
+
+cuda: true     # override to manually disable cuda, otherwise will use gpu if available (silently switches to cpu if not)
+random_seed: 42
+
+# training params
+task: chexpert
+max_epochs: 30  # chexpert used 3
+bs: 32  # chexpert used 16
+debug: -1  # break training epoch after debug batches
+
+# optimizer params
+optim: adam  # chexpert used adam
+lr: 0.0001  # chexpert used 0.0001
+beta1: 0.9  # chexpert used 0.9
+beta2: 0.999  # chexpert used 0.999
+weight_decay: 0.0001  # seemed to help with overfitting
+momentum: 0.9
+
+# model params
+model: densenet
+pretrained: true
+uncertainty: ignore
+
+# chexpert params
+chexpert_data: /scratch/ax2028/CheXpert-dataset/
+chex_auxtask: false
+

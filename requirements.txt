@@ -1,0 +1,5 @@
+hydra-core
+hydra_colorlog
+hydra_submitit_launcher
+torch
+wandb
